@@ -8,16 +8,25 @@ type PacketType int
 const (
 	PacketTypeHello PacketType = iota
 	PacketTypeIdentify
+	PacketTypeSuccess
+	PacketTypeError
+	PacketTypeAgentCount
+	PacketTypeMessage
+	PacketTypeElevate
+	PacketTypeClientPresent
+	PacketTypeClientMessagesRequest
+	PacketTypeClientMessagesResponse
 )
 
 // Packet is a packet sent to the client.
 type Packet struct {
-	Type int         `json:"t"`
+	Type PacketType  `json:"t"`
 	Data interface{} `json:"d"`
+	Raw  []byte      `json:"-"`
 }
 
 // NewPacket creates a new packet.
-func NewPacket(t int, d interface{}) *Packet {
+func NewPacket(t PacketType, d interface{}) *Packet {
 	return &Packet{
 		Type: t,
 		Data: d,
