@@ -31,10 +31,11 @@
 {"t":1,"d":{"a":"password","n":"John","l":0}}
 {"t":2,"d":{"s":true}}
 {"t":7,"d":{"ids":[]}}
-{"t":5,"d":{"m":"Bonjour j'ai un soucis avec ma cafetiere","t":"","f":"1"}}{"t":5,"d":{"m":"Bonjour, quel est le soucis ?","t":"1"}}  
-{"t":6,"d":{"i":1}}
+{"t":5,"d":{"m":"Bonjour j'ai un soucis avec ma cafetiere","t":"","f":"1"}}
+{"t":5,"d":{"m":"Bonjour, quel est le soucis ?","t":"1"}}  
 {"t":8,"d":{"i":1}}
 {"t":9,"d":{"m":[{"m":"Bonjour j'ai un soucis avec ma cafetiere","t":"","f":""},{"m":"Bonjour, quel est le soucis ?","t":"","f":"John"}]}}
+{"t":6,"d":{"i":1}}
 ```
 
 # Packets
