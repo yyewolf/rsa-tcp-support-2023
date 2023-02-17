@@ -15,4 +15,4 @@
 # vendor/
 
 # Rust
-/target
+client/target
