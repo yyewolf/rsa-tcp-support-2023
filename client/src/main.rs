@@ -1,12 +1,10 @@
-mod client;
-
-use std::io;
-
+use client::client::{run_client, Client};
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
+use std::io;
 use tui::backend::CrosstermBackend;
 use tui::Terminal;
 
@@ -20,8 +18,8 @@ fn main() -> Result<(), io::Error> {
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
-    let mut client = client::Client::default();
-    client::run_client(&mut terminal, &mut client)?;
+    let mut client = Client::default();
+    run_client(&mut terminal, &mut client)?;
 
     // restore terminal
     disable_raw_mode()?;

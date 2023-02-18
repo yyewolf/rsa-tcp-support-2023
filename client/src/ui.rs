@@ -1,4 +1,5 @@
-use crate::client::{messages::MessageType, Client};
+use crate::client::Client;
+use crate::message::MessageType;
 use std::io;
 use tui::{
     backend::Backend,
@@ -13,6 +14,7 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
     let help = display_help()?;
     let console = display_console(client)?;
     let message_list = display_body(client)?;
+    let logs = display_logs(client)?;
 
     terminal.draw(|f| {
         let size = f.size();
@@ -25,6 +27,12 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
             .constraints([Constraint::Min(20), Constraint::Length(32)].as_ref())
             .split(size);
 
+        // right panel constraints
+        let right_panel = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Min(20), Constraint::Length(3)].as_ref())
+            .split(chunks[1]);
+
         // body constraints
         let body = Layout::default()
             .direction(Direction::Vertical)
@@ -34,13 +42,14 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
         // render widgets
         f.render_widget(message_list, body[0]);
         f.render_widget(console, body[1]);
-        f.render_widget(help, chunks[1]);
+        f.render_widget(logs, right_panel[0]);
+        f.render_widget(help, right_panel[1]);
     })?;
 
     Ok(())
 }
 
-fn display_help() -> Result<Table<'static>, io::Error> {
+fn display_help<'a>() -> Result<Table<'a>, io::Error> {
     let rows = vec![Row::new(vec!["<Esc>", "Quit"])];
 
     Ok(Table::new(rows)
@@ -54,7 +63,7 @@ fn display_help() -> Result<Table<'static>, io::Error> {
         .column_spacing(1))
 }
 
-fn display_console(client: &Client) -> Result<Paragraph<'static>, io::Error> {
+fn display_console<'a>(client: &Client) -> Result<Paragraph<'a>, io::Error> {
     let text = vec![Spans::from(vec![
         Span::styled(">> ", Style::default().fg(Color::Green)),
         Span::styled(client.input.clone(), Style::default().fg(Color::Blue)),
@@ -94,6 +103,22 @@ fn display_body<'a>(client: &Client) -> Result<List<'a>, io::Error> {
 
     let list = List::new(items)
         .block(Block::default().title("Messages").borders(Borders::ALL))
+        .style(Style::default().fg(Color::White));
+
+    Ok(list)
+}
+
+fn display_logs<'a>(client: &Client) -> Result<List<'a>, io::Error> {
+    let items: Vec<ListItem> = vec![ListItem::new(vec![Spans::from(vec![
+        Span::styled("status : ", Style::default().fg(Color::Yellow)),
+        match client.status {
+            true => Span::styled("Connected", Style::default().fg(Color::Green)),
+            false => Span::styled("Disconnected", Style::default().fg(Color::Red)),
+        },
+    ])])];
+
+    let list = List::new(items)
+        .block(Block::default().title("Logs").borders(Borders::ALL))
         .style(Style::default().fg(Color::White));
 
     Ok(list)

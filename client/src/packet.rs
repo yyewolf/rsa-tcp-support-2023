@@ -1,4 +1,4 @@
-use crate::client::messages::Message;
+use crate::message::Message;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
@@ -71,8 +71,13 @@ pub struct Hello {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Identify {
+    #[serde(rename = "l")]
     level: u16,
+
+    #[serde(rename = "a")]
     auth: String,
+
+    #[serde(rename = "n")]
     name: String,
 }
 
@@ -84,27 +89,32 @@ pub struct Error {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct AgentCount {
+    #[serde(rename = "c")]
     count: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Elevate {
+    #[serde(rename = "i")]
     id: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ClientPresent {
+    #[serde(rename = "i")]
     ids: Vec<u16>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ClientHistoryRequest {
+    #[serde(rename = "i")]
     id: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct ClientHistory {
-    history: Vec<Message>,
+    #[serde(rename = "m")]
+    messages: Vec<Message>,
 }
 
 impl Packet {

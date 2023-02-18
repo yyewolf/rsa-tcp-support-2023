@@ -1,10 +1,7 @@
-mod events;
-mod messages;
-mod packet;
-mod ui;
-
-use crate::client::messages::Message;
-use crate::client::packet::{Packet, PacketType};
+use crate::events::{read_events, Events};
+use crate::message::{Message, MessageType};
+use crate::packet::{Packet, PacketType};
+use crate::ui::ui;
 use crossterm::event::{KeyCode, KeyEvent};
 use serde_json::Deserializer;
 use std::io;
@@ -18,9 +15,10 @@ use tui::Terminal;
 
 #[derive(Clone, Default)]
 pub struct Client {
-    input: String,
-    messages: Vec<Message>,
-    conn: Conn,
+    pub input: String,
+    pub messages: Vec<Message>,
+    pub conn: Conn,
+    pub status: bool,
 }
 
 pub struct Conn {
@@ -46,7 +44,7 @@ impl Client {
             msg: self.input.drain(..).collect(),
             to: String::default(),
             from: String::default(),
-            message_type: messages::MessageType::Outgoing,
+            message_type: MessageType::Outgoing,
         };
 
         let p = Packet::message(m);
@@ -69,7 +67,9 @@ impl Client {
             Some(PacketType::AgentCount) => {
                 // TODO: handle agent count
             }
-            Some(PacketType::Success) => {}
+            Some(PacketType::Success) => {
+                self.status = true;
+            }
             _ => {
                 println!("Unknown packet type received");
             }
@@ -196,12 +196,12 @@ pub fn run_client<B: Backend>(
         }
 
         // render ui
-        ui::ui(term, client)?;
+        ui(term, client)?;
 
-        let event = events::read_events()?;
+        let event = read_events()?;
 
         match event {
-            events::Events::Key(key) => match client.handle_key_event(key) {
+            Events::Key(key) => match client.handle_key_event(key) {
                 Ok(_) => {}
                 Err(Error::Exit) => break,
                 Err(Error::Err(e)) => return Err(e),
