@@ -12,5 +12,6 @@ func LoadErrorPage(r, msg string) {
 			Pages.SwitchToPage(r)
 		})
 	ErrorPage.SetBorder(true).SetTitle("Erreur").SetTitleAlign(tview.AlignLeft)
-	Pages.AddPage("error", ErrorPage, true, false)
+	Pages.AddPage("error", ErrorPage, true, true)
+	App.ForceDraw()
 }

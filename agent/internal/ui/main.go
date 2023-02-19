@@ -24,22 +24,16 @@ func loadMainPage() {
 		settings.Settings.Name = text
 	})
 	MainPage.AddButton("Connect", func() {
-		Pages.SwitchToPage("loading")
-		App.ForceDraw()
-
 		// Try to connect to TCP server
 		c, err := net.Dial("tcp", "127.0.0.1:8000")
 		if err != nil {
 			LoadErrorPage("main", "Impossible de se connecter au serveur")
-			App.ForceDraw()
 			return
 		}
-
 		handleMessages(c)
 		settings.Settings.Conn = c
 
 		time.Sleep(1 * time.Second)
-
 		// Send authentification
 		settings.Settings.Send(packets.NewIdentify(settings.Settings.Auth, settings.Settings.Name))
 	})

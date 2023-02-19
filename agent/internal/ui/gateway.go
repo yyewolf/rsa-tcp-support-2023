@@ -67,7 +67,6 @@ func handleMessages(c net.Conn) {
 
 				// Error
 				LoadErrorPage("main", data.Error)
-				App.ForceDraw()
 			case packets.PacketTypeMessage:
 				data := &packets.Message{}
 				err = json.Unmarshal(p.Raw, data)
@@ -93,11 +92,38 @@ func handleMessages(c net.Conn) {
 						settings.Settings.Send(packets.NewClientMessagesRequest(settings.Settings.SelectedClient))
 					}
 				}
+			case packets.PacketTypeElevate:
+				data := &packets.Elevate{}
+				err = json.Unmarshal(p.Raw, data)
+				if err != nil {
+					goto err
+				}
+
+				// Remove the client from the list
+				items := UserList.FindItems(strconv.Itoa(data.ID), "", false, true)
+				if len(items) > 0 {
+					UserList.RemoveItem(items[0])
+					App.ForceDraw()
+				}
+
+				// If the client was selected, select the first client
+				if settings.Settings.SelectedClient == data.ID {
+					if UserList.GetItemCount() > 0 {
+						main, _ := UserList.GetItemText(0)
+						settings.Settings.SelectedClient, _ = strconv.Atoi(main)
+						settings.Settings.Send(packets.NewClientMessagesRequest(settings.Settings.SelectedClient))
+					} else {
+						settings.Settings.SelectedClient = 0
+						// Empty the chat
+						MessageList.Clear()
+						App.ForceDraw()
+					}
+				}
+
 			}
 		}
 	err:
 		// Error
 		LoadErrorPage("main", "Erreur lors de la lecture d'un paquet")
-		App.ForceDraw()
 	}()
 }
