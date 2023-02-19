@@ -28,7 +28,7 @@
 ## As an agent
 ```
 {"t":0,"d":{"i":2}}
-{"t":1,"d":{"a":"password","n":"John","l":0}}
+{"t":1,"d":{"a":"password","n":"John"}}
 {"t":2,"d":{"s":true}}
 {"t":7,"d":{"ids":[]}}
 {"t":5,"d":{"m":"Bonjour j'ai un soucis avec ma cafetiere","t":"","f":"1"}}
@@ -43,7 +43,7 @@
 | Name | Type | Data |
 | :-----: | :---: | :---: |
 | Hello | 0   | i: ID (int)\*   |
-| Identify | 1   | l: Level (int)\*\*<br>a: Auth (string)\*\*<br>n: Name (string)\*\*|
+| Identify | 1   | a: Auth (string)\*\*<br>n: Name (string)\*\*|
 | Success | 2   | s: Success (bool)   |
 | Error | 3   | e: Error (string)   |
 | Agent Count\* | 4   | c: Count (int)   |

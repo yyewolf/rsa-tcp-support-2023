@@ -17,14 +17,9 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 	}
 
 	// If auth is a secret password then it's an agent.
-	if data.Auth == os.Getenv("AUTH_SECRET") {
+	if data.Auth == os.Getenv("AUTH_SECRET_0") || data.Auth == os.Getenv("AUTH_SECRET_1") || data.Auth == os.Getenv("AUTH_SECRET_2") {
 		if data.Name == "" {
 			err = errors.New("invalid name")
-			return
-		}
-
-		if data.Level < 0 || data.Level > 2 {
-			err = errors.New("invalid level")
 			return
 		}
 
@@ -32,15 +27,22 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 		agent := &Agent{
 			ID:    c.ID,
 			Name:  data.Name,
-			Level: data.Level,
 			Conn:  c.Conn,
 			Mutex: &sync.Mutex{},
+		}
+
+		if data.Auth == os.Getenv("AUTH_SECRET_0") {
+			agent.Level = 0
+		} else if data.Auth == os.Getenv("AUTH_SECRET_1") {
+			agent.Level = 1
+		} else if data.Auth == os.Getenv("AUTH_SECRET_2") {
+			agent.Level = 2
 		}
 
 		c.Agent = agent
 
 		// Add the agent to the agents map.
-		s.Agents[data.Level] = append(s.Agents[c.ID], agent)
+		s.Agents[agent.Level] = append(s.Agents[c.ID], agent)
 
 		c.Send(packets.NewSuccess(true))
 		if os.Getenv("DEBUG") == "true" {
@@ -49,7 +51,7 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 
 		// Send the agent count to all the clients connected in this level.
 		for _, client := range s.Clients {
-			if client.Level != data.Level {
+			if client.Level != agent.Level {
 				continue
 			}
 			client.Send(packets.NewAgentCount(len(s.Agents)))
@@ -58,7 +60,7 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 		// Send the clients to the agent.
 		var clients = make([]int, 0)
 		for _, client := range s.Clients {
-			if client.Level != data.Level {
+			if client.Level != agent.Level {
 				continue
 			}
 			clients = append(clients, client.ID)
@@ -118,10 +120,11 @@ func (s *Server) handleMessage(data *packets.Message, c *Connection) (err error)
 
 	if c.Client != nil {
 		// Send the message to all the agents connected in this level.
+		p := packets.NewMessage(data.Message, "", strconv.Itoa(c.Client.ID))
+		c.Client.History = append(c.Client.History, p.Data.(*packets.Message))
 		for _, agent := range s.Agents[c.Client.Level] {
-			agent.Send(packets.NewMessage(data.Message, "", strconv.Itoa(c.Client.ID)))
+			agent.Send(p)
 		}
-		c.Client.History = append(c.Client.History, data)
 		return
 	}
 

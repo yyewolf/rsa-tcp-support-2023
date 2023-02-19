@@ -55,7 +55,7 @@ func (a *Agent) Send(p *packets.Packet) error {
 	_, err := a.Conn.Write(p.ToBytes())
 
 	if os.Getenv("DEBUG") == "true" {
-		log.Println("[HUB] Sent packet to agent", a.ID, ":", p.Type)
+		log.Println("[HUB] Sent packet to agent", a.ID, ":", p.Type, " => ", string(p.ToBytes()))
 	}
 
 	return err
