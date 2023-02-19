@@ -24,6 +24,11 @@ func Start() error {
 		return err
 	}
 
+	modR, err := strconv.Atoi(os.Getenv("MOD_R"))
+	if err != nil {
+		return err
+	}
+
 	// Connect to the server
 	conn, err = net.Dial("tcp", os.Getenv("HOST"))
 	if err != nil {
@@ -63,7 +68,7 @@ func Start() error {
 			}
 
 			id, _ := strconv.Atoi(data.From)
-			if id%mod == 0 {
+			if id%mod == modR {
 				log.Printf("Received message from %s: %s\n", data.From, data.Message)
 				replyToMessage(data)
 			}
