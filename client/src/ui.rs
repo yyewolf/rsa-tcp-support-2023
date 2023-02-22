@@ -21,8 +21,8 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
         let block = Block::default();
         f.render_widget(block, size);
 
-        // chunks constraints
-        let chunks = Layout::default()
+        // window constraints
+        let window = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Min(20), Constraint::Length(32)].as_ref())
             .split(size);
@@ -30,14 +30,14 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
         // right panel constraints
         let right_panel = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Min(20), Constraint::Length(3)].as_ref())
-            .split(chunks[1]);
+            .constraints([Constraint::Ratio(1, 3), Constraint::Ratio(2, 3)].as_ref())
+            .split(window[1]);
 
         // body constraints
         let body = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Min(20), Constraint::Length(3)].as_ref())
-            .split(chunks[0]);
+            .split(window[0]);
 
         // render widgets
         f.render_widget(message_list, body[0]);
@@ -50,7 +50,11 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
 }
 
 fn display_help<'a>() -> Result<Table<'a>, io::Error> {
-    let rows = vec![Row::new(vec!["<Esc>", "Quit"])];
+    let rows = vec![
+        Row::new(vec!["<Esc>", "Quit"]),
+        Row::new(vec!["<Ctr+E>", "Elevate"]),
+        Row::new(vec!["<Enter>", "Send message"]),
+    ];
 
     Ok(Table::new(rows)
         .block(

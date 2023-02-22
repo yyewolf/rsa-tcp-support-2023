@@ -1,9 +1,8 @@
 use crate::conn::Conn;
-use crate::events::{read_events, Events};
+use crate::events::handle_events;
 use crate::message::{Message, MessageType};
 use crate::packet::{Packet, PacketType};
 use crate::ui::ui;
-use crossterm::event::{KeyCode, KeyEvent};
 use std::io;
 use std::sync::mpsc::Receiver;
 use std::thread;
@@ -54,7 +53,7 @@ impl Client {
         Ok(p)
     }
 
-    fn send_message(&mut self) -> Result<(), Error> {
+    pub fn send_message(&mut self) -> Result<(), Error> {
         let p = match self.wrap_message() {
             Ok(p) => p,
             Err(e) => return Err(Error::Err(e)),
@@ -107,29 +106,6 @@ impl Client {
         self.conn.write(p)?;
         Ok(())
     }
-
-    pub fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
-        match key.code {
-            KeyCode::Char(c) => {
-                self.input.push(c);
-            }
-            KeyCode::Backspace => {
-                self.input.pop();
-            }
-            KeyCode::Enter => match self.input.as_str() {
-                "elevate" => {
-                    self.elevate()?;
-                }
-                _ => {
-                    self.send_message()?;
-                }
-            },
-            KeyCode::Esc => return Err(Error::Exit),
-            _ => {}
-        }
-
-        Ok(())
-    }
 }
 
 pub fn run_client<B: Backend>(
@@ -152,18 +128,12 @@ pub fn run_client<B: Backend>(
         // render ui
         ui(term, client)?;
 
-        let event = read_events()?;
-
-        match event {
-            Events::Key(key) => match client.handle_key_event(key) {
-                Ok(_) => {}
-                Err(Error::Exit) => break,
-                Err(Error::Err(e)) => return Err(e),
+        match handle_events(client) {
+            Ok(_) => {}
+            Err(e) => match e {
+                Error::Exit => break,
+                Error::Err(e) => return Err(e),
             },
-            Events::Tick => {}
-            _ => {
-                println!("Unhandled event")
-            }
         }
     }
 
