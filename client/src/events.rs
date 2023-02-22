@@ -29,7 +29,7 @@ pub fn handle_events(client: &mut Client) -> Result<(), Error> {
     match event {
         Events::Event(e) => match e {
             Event::Key(KeyEvent {
-                code: KeyCode::Char('E'),
+                code: KeyCode::Char('e'),
                 modifiers: KeyModifiers::CONTROL,
             }) => client.elevate()?,
             Event::Key(KeyEvent {
