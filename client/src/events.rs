@@ -1,5 +1,5 @@
-use crossterm::event::{Event, KeyEvent, MouseEvent};
-use std::io;
+use crossterm::event::{poll, read, Event, KeyEvent, MouseEvent};
+use std::{io, time::Duration};
 
 pub enum Events {
     Key(KeyEvent),
@@ -8,10 +8,13 @@ pub enum Events {
 }
 
 pub fn read_events() -> Result<Events, io::Error> {
-    let event = crossterm::event::read()?;
-    match event {
-        Event::Key(key) => Ok(Events::Key(key)),
-        Event::Mouse(mouse) => Ok(Events::Mouse(mouse)),
-        _ => Ok(Events::Tick),
+    if poll(Duration::from_millis(500))? {
+        match read()? {
+            Event::Key(k) => Ok(Events::Key(k)),
+            Event::Mouse(m) => Ok(Events::Mouse(m)),
+            _ => Ok(Events::Tick),
+        }
+    } else {
+        Ok(Events::Tick)
     }
 }
