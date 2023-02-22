@@ -4,17 +4,18 @@ use std::io;
 use tui::{
     backend::Backend,
     layout::{Alignment, Constraint, Direction, Layout},
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     text::{Span, Spans},
     widgets::{Block, BorderType, Borders, List, ListItem, Paragraph, Row, Table},
     Terminal,
 };
 
-pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(), io::Error> {
+pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &mut Client) -> Result<(), io::Error> {
     let help = display_help()?;
     let console = display_console(client)?;
     let message_list = display_body(client)?;
     let logs = display_logs(client)?;
+    let messages_state = &mut client.messages.state;
 
     terminal.draw(|f| {
         let size = f.size();
@@ -40,7 +41,7 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &Client) -> Result<(),
             .split(window[0]);
 
         // render widgets
-        f.render_widget(message_list, body[0]);
+        f.render_stateful_widget(message_list, body[0], messages_state);
         f.render_widget(console, body[1]);
         f.render_widget(logs, right_panel[0]);
         f.render_widget(help, right_panel[1]);
@@ -108,7 +109,11 @@ fn display_body<'a>(client: &Client) -> Result<List<'a>, io::Error> {
 
     let list = List::new(items)
         .block(Block::default().title("Messages").borders(Borders::ALL))
-        .style(Style::default().fg(Color::White));
+        .highlight_style(
+            Style::default()
+                .bg(Color::LightYellow)
+                .add_modifier(Modifier::BOLD),
+        );
 
     Ok(list)
 }

@@ -2,6 +2,7 @@ use crate::conn::Conn;
 use crate::events::handle_events;
 use crate::message::{Message, MessageType};
 use crate::packet::{Packet, PacketType};
+use crate::statefull_list::StatefullList;
 use crate::ui::ui;
 use std::io;
 use std::sync::mpsc::Receiver;
@@ -12,9 +13,9 @@ use tui::Terminal;
 #[derive(Clone, Default)]
 pub struct Client {
     pub input: String,
-    pub messages: Vec<Message>,
     pub status: bool,
     pub level: u8,
+    pub messages: StatefullList<Message>,
 
     conn: Conn,
 }
@@ -40,7 +41,7 @@ impl Client {
         }
     }
 
-    fn wrap_message(&mut self) -> Result<Packet, io::Error> {
+    fn wrap_input(&mut self) -> Result<Packet, io::Error> {
         let m = Message {
             msg: self.input.drain(..).collect(),
             to: String::default(),
@@ -54,7 +55,7 @@ impl Client {
     }
 
     pub fn send_message(&mut self) -> Result<(), Error> {
-        let p = match self.wrap_message() {
+        let p = match self.wrap_input() {
             Ok(p) => p,
             Err(e) => return Err(Error::Err(e)),
         };

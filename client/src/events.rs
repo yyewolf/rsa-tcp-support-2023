@@ -36,6 +36,14 @@ pub fn handle_events(client: &mut Client) -> Result<(), Error> {
 
             // Events without modifiers
             Event::Key(KeyEvent {
+                code: KeyCode::Down,
+                modifiers: _,
+            }) => client.messages.next(),
+            Event::Key(KeyEvent {
+                code: KeyCode::Up,
+                modifiers: _,
+            }) => client.messages.prev(),
+            Event::Key(KeyEvent {
                 code: KeyCode::Char(c),
                 modifiers: _,
             }) => client.input.push(c),
