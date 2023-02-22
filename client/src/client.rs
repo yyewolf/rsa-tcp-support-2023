@@ -1,13 +1,10 @@
+use crate::conn::Conn;
 use crate::events::{read_events, Events};
 use crate::message::{Message, MessageType};
 use crate::packet::{Packet, PacketType};
 use crate::ui::ui;
 use crossterm::event::{KeyCode, KeyEvent};
-use serde_json::Deserializer;
 use std::io;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::net::{Ipv4Addr, TcpStream};
 use std::sync::mpsc::Receiver;
 use std::thread;
 use tui::backend::Backend;
@@ -17,14 +14,10 @@ use tui::Terminal;
 pub struct Client {
     pub input: String,
     pub messages: Vec<Message>,
-    pub conn: Conn,
     pub status: bool,
-}
+    pub level: u8,
 
-pub struct Conn {
-    addr: Ipv4Addr,
-    port: u16,
-    stream: Option<TcpStream>,
+    conn: Conn,
 }
 
 pub enum Error {
@@ -34,12 +27,21 @@ pub enum Error {
 
 impl Client {
     pub fn connect(&mut self) -> Result<(), io::Error> {
-        let stream = TcpStream::connect(format!("{}:{}", self.conn.addr, self.conn.port))?;
-        self.conn.stream = Some(stream);
-        Ok(())
+        self.conn.connect()
     }
 
-    pub fn wrap_message(&mut self) -> Result<Packet, io::Error> {
+    pub fn elevate(&mut self) -> Result<(), Error> {
+        let p = Packet::elevate();
+        match self.conn.write(p) {
+            Ok(_) => {
+                self.input.clear();
+                Ok(())
+            }
+            Err(e) => Err(Error::Err(e)),
+        }
+    }
+
+    fn wrap_message(&mut self) -> Result<Packet, io::Error> {
         let m = Message {
             msg: self.input.drain(..).collect(),
             to: String::default(),
@@ -52,6 +54,20 @@ impl Client {
         Ok(p)
     }
 
+    fn send_message(&mut self) -> Result<(), Error> {
+        let p = match self.wrap_message() {
+            Ok(p) => p,
+            Err(e) => return Err(Error::Err(e)),
+        };
+        let msg = p.data.message.clone().unwrap();
+        match self.send(p) {
+            Ok(_) => self.messages.push(msg),
+            Err(e) => return Err(Error::Err(e)),
+        }
+        self.input.clear();
+        Ok(())
+    }
+
     pub fn handle_packet(&mut self, packet: &Packet) -> Result<(), io::Error> {
         match PacketType::from_u8(packet.packet_type) {
             Some(PacketType::Hello) => {
@@ -59,7 +75,16 @@ impl Client {
                 self.send(identify)?;
             }
             Some(PacketType::Message) => {
-                self.messages.push(packet.data.message.clone().unwrap());
+                let msg = packet.data.message.clone().unwrap();
+                match msg.from.as_str() {
+                    "SYSTEM" => {
+                        let (_, level) = msg.msg.split_once("level ").unwrap();
+                        self.level = level.parse().unwrap();
+                    }
+                    _ => {
+                        self.messages.push(msg);
+                    }
+                }
             }
             Some(PacketType::Error) => {
                 // TODO: handle error
@@ -91,90 +116,19 @@ impl Client {
             KeyCode::Backspace => {
                 self.input.pop();
             }
-            KeyCode::Enter => {
-                let p = match self.wrap_message() {
-                    Ok(p) => p,
-                    Err(e) => return Err(Error::Err(e)),
-                };
-                let msg = p.data.message.clone().unwrap();
-                match self.send(p) {
-                    Ok(_) => self.messages.push(msg),
-                    Err(e) => return Err(Error::Err(e)),
+            KeyCode::Enter => match self.input.as_str() {
+                "elevate" => {
+                    self.elevate()?;
                 }
-                self.input.clear();
-            }
+                _ => {
+                    self.send_message()?;
+                }
+            },
             KeyCode::Esc => return Err(Error::Exit),
             _ => {}
         }
 
         Ok(())
-    }
-}
-
-impl Conn {
-    pub fn read(&mut self) -> Result<Option<Vec<Packet>>, io::Error> {
-        let stream = self.stream.as_mut().unwrap();
-        let mut reader = BufReader::new(stream);
-        let mut buf = [0; 1024];
-
-        reader.read(&mut buf)?;
-
-        // Remove null bytes from buffer
-        let slice = buf
-            .iter()
-            .cloned()
-            .skip_while(|&x| x != 123)
-            .take_while(|&x| x != 0)
-            .collect::<Vec<u8>>();
-
-        if slice.len() == 0 {
-            return Ok(None);
-        }
-
-        // Deserialize
-        let stream_de = Deserializer::from_slice(&slice).into_iter::<Packet>();
-
-        let mut packets = Vec::new();
-        stream_de.into_iter().for_each(|p| {
-            if let Ok(p) = p {
-                packets.push(p);
-            }
-        });
-
-        Ok(Some(packets))
-    }
-
-    pub fn write(&mut self, packet: Packet) -> Result<(), io::Error> {
-        let stream = self.stream.as_mut().unwrap();
-        let s = serde_json::to_string(&packet)?;
-        stream.write(s.as_bytes())?;
-        stream.flush()?;
-        Ok(())
-    }
-}
-
-impl Default for Conn {
-    fn default() -> Self {
-        Self {
-            addr: Ipv4Addr::new(127, 0, 0, 1),
-            port: 8000,
-            stream: None,
-        }
-    }
-}
-
-impl Clone for Conn {
-    fn clone(&self) -> Self {
-        let stream = match &self.stream {
-            Some(stream) => Some(stream.try_clone().unwrap()),
-            None => None,
-        };
-
-        Self {
-            addr: self.addr,
-            port: self.port,
-            stream: stream,
-        }
     }
 }
 
@@ -206,7 +160,10 @@ pub fn run_client<B: Backend>(
                 Err(Error::Exit) => break,
                 Err(Error::Err(e)) => return Err(e),
             },
-            _ => {}
+            Events::Tick => {}
+            _ => {
+                println!("Unhandled event")
+            }
         }
     }
 

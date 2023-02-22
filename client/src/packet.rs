@@ -96,7 +96,8 @@ pub struct AgentCount {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct Elevate {
     #[serde(rename = "i")]
-    id: u16,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<u16>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
@@ -137,6 +138,16 @@ impl Packet {
                     auth,
                     name,
                 }),
+                ..Default::default()
+            },
+        }
+    }
+
+    pub fn elevate() -> Self {
+        Packet {
+            packet_type: PacketType::Elevate as u8,
+            data: PacketData {
+                elevate: Some(Elevate { id: None }),
                 ..Default::default()
             },
         }

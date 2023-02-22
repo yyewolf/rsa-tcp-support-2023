@@ -109,13 +109,19 @@ fn display_body<'a>(client: &Client) -> Result<List<'a>, io::Error> {
 }
 
 fn display_logs<'a>(client: &Client) -> Result<List<'a>, io::Error> {
-    let items: Vec<ListItem> = vec![ListItem::new(vec![Spans::from(vec![
-        Span::styled("status : ", Style::default().fg(Color::Yellow)),
-        match client.status {
-            true => Span::styled("Connected", Style::default().fg(Color::Green)),
-            false => Span::styled("Disconnected", Style::default().fg(Color::Red)),
-        },
-    ])])];
+    let items: Vec<ListItem> = vec![ListItem::new(vec![
+        Spans::from(vec![
+            Span::styled("status : ", Style::default().fg(Color::Yellow)),
+            match client.status {
+                true => Span::styled("Connected", Style::default().fg(Color::Green)),
+                false => Span::styled("Disconnected", Style::default().fg(Color::Red)),
+            },
+        ]),
+        Spans::from(vec![
+            Span::styled("level : ", Style::default().fg(Color::Yellow)),
+            Span::styled(client.level.to_string(), Style::default().fg(Color::Blue)),
+        ]),
+    ])];
 
     let list = List::new(items)
         .block(Block::default().title("Logs").borders(Borders::ALL))
