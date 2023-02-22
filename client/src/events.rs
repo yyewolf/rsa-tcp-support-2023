@@ -28,10 +28,13 @@ pub fn handle_events(client: &mut Client) -> Result<(), Error> {
 
     match event {
         Events::Event(e) => match e {
+            // Events with modifiers
             Event::Key(KeyEvent {
                 code: KeyCode::Char('e'),
                 modifiers: KeyModifiers::CONTROL,
             }) => client.elevate()?,
+
+            // Events without modifiers
             Event::Key(KeyEvent {
                 code: KeyCode::Char(c),
                 modifiers: _,

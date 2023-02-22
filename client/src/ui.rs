@@ -54,6 +54,7 @@ fn display_help<'a>() -> Result<Table<'a>, io::Error> {
         Row::new(vec!["<Esc>", "Quit"]),
         Row::new(vec!["<Ctr+E>", "Elevate"]),
         Row::new(vec!["<Enter>", "Send message"]),
+        Row::new(vec!["<Backspace>", "Delete character"]),
     ];
 
     Ok(Table::new(rows)
@@ -122,7 +123,7 @@ fn display_logs<'a>(client: &Client) -> Result<List<'a>, io::Error> {
             },
         ]),
         Spans::from(vec![
-            Span::styled("level : ", Style::default().fg(Color::Yellow)),
+            Span::styled("level  : ", Style::default().fg(Color::Yellow)),
             Span::styled(client.level.to_string(), Style::default().fg(Color::Blue)),
         ]),
     ])];
