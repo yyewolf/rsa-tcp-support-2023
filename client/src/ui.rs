@@ -118,28 +118,37 @@ fn display_body<'a>(client: &Client) -> Result<List<'a>, io::Error> {
 }
 
 fn display_logs<'a>(client: &Client) -> Result<List<'a>, io::Error> {
-    let items: Vec<ListItem> = vec![ListItem::new(vec![
-        Spans::from(vec![
-            Span::styled("status : ", Style::default().fg(Color::Yellow)),
+    let items = vec![
+        (
+            String::from("status : "),
             match client.status {
-                true => Span::styled("Connected", Style::default().fg(Color::Green)),
-                false => Span::styled("Disconnected", Style::default().fg(Color::Red)),
+                true => ("Connected".to_string(), Color::Green),
+                false => ("Disconnected".to_string(), Color::Red),
             },
-        ]),
-        Spans::from(vec![
-            Span::styled("level  : ", Style::default().fg(Color::Yellow)),
-            Span::styled(client.level.to_string(), Style::default().fg(Color::Blue)),
-        ]),
-        Spans::from(vec![
-            Span::styled("agents : ", Style::default().fg(Color::Yellow)),
-            Span::styled(
-                client.agent_count.to_string(),
-                Style::default().fg(Color::Blue),
-            ),
-        ]),
-    ])];
+        ),
+        (
+            String::from("level  : "),
+            (client.level.to_string(), Color::Blue),
+        ),
+        (
+            String::from("agents : "),
+            (client.agent_count.to_string(), Color::Blue),
+        ),
+    ];
 
-    let list = List::new(items)
+    let list_item: Vec<ListItem> = items
+        .iter()
+        .map(|(title, value)| {
+            let spans = vec![
+                Span::styled(title.clone(), Style::default().fg(Color::Yellow)),
+                Span::styled(value.0.clone(), Style::default().fg(value.1)),
+            ];
+
+            ListItem::new(Spans::from(spans))
+        })
+        .collect();
+
+    let list = List::new(list_item)
         .block(Block::default().title("Logs").borders(Borders::ALL))
         .style(Style::default().fg(Color::White));
 
