@@ -33,6 +33,10 @@ pub fn handle_events(client: &mut Client) -> Result<(), Error> {
                 code: KeyCode::Char('e'),
                 modifiers: KeyModifiers::CONTROL,
             }) => client.elevate()?,
+            Event::Key(KeyEvent {
+                code: KeyCode::Char('u'),
+                modifiers: KeyModifiers::CONTROL,
+            }) => client.messages.unselect(),
 
             // Events without modifiers
             Event::Key(KeyEvent {

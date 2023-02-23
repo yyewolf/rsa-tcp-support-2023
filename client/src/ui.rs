@@ -53,9 +53,12 @@ pub fn ui<B: Backend>(terminal: &mut Terminal<B>, client: &mut Client) -> Result
 fn display_help<'a>() -> Result<Table<'a>, io::Error> {
     let rows = vec![
         Row::new(vec!["<Esc>", "Quit"]),
-        Row::new(vec!["<Ctr+E>", "Elevate"]),
+        Row::new(vec!["<Ctr+e>", "Elevate"]),
         Row::new(vec!["<Enter>", "Send message"]),
         Row::new(vec!["<Backspace>", "Delete character"]),
+        Row::new(vec!["<Up>", "Select previous message"]),
+        Row::new(vec!["<Down>", "Select next message"]),
+        Row::new(vec!["<Ctrl+u>", "Unselect message"]),
     ];
 
     Ok(Table::new(rows)
@@ -109,11 +112,7 @@ fn display_body<'a>(client: &Client) -> Result<List<'a>, io::Error> {
 
     let list = List::new(items)
         .block(Block::default().title("Messages").borders(Borders::ALL))
-        .highlight_style(
-            Style::default()
-                .bg(Color::LightYellow)
-                .add_modifier(Modifier::BOLD),
-        );
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD));
 
     Ok(list)
 }
