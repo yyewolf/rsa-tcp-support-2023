@@ -15,6 +15,7 @@ pub struct Client {
     pub input: String,
     pub status: bool,
     pub level: u8,
+    pub agent_count: u16,
     pub messages: StatefullList<Message>,
 
     conn: Conn,
@@ -90,7 +91,8 @@ impl Client {
                 // TODO: handle error
             }
             Some(PacketType::AgentCount) => {
-                // TODO: handle agent count
+                let msg = packet.data.agent_count.clone().unwrap();
+                self.agent_count = msg.count;
             }
             Some(PacketType::Success) => {
                 self.status = true;

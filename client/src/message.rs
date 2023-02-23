@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Default, PartialEq, Debug)]
 pub struct Message {
     #[serde(rename = "m")]
     pub msg: String,

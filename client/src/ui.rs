@@ -130,6 +130,13 @@ fn display_logs<'a>(client: &Client) -> Result<List<'a>, io::Error> {
             Span::styled("level  : ", Style::default().fg(Color::Yellow)),
             Span::styled(client.level.to_string(), Style::default().fg(Color::Blue)),
         ]),
+        Spans::from(vec![
+            Span::styled("agents : ", Style::default().fg(Color::Yellow)),
+            Span::styled(
+                client.agent_count.to_string(),
+                Style::default().fg(Color::Blue),
+            ),
+        ]),
     ])];
 
     let list = List::new(items)

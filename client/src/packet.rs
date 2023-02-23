@@ -90,7 +90,7 @@ pub struct Error {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct AgentCount {
     #[serde(rename = "c")]
-    count: u16,
+    pub count: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
