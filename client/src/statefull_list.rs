@@ -9,6 +9,10 @@ pub struct StatefullList<T> {
 
 impl<T> StatefullList<T> {
     pub fn next(&mut self) {
+        if self.items.len() == 0 {
+            return;
+        }
+
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= self.items.len() - 1 {
@@ -23,6 +27,10 @@ impl<T> StatefullList<T> {
     }
 
     pub fn prev(&mut self) {
+        if self.items.len() == 0 {
+            return;
+        }
+
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
