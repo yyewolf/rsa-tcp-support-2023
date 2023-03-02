@@ -1,4 +1,4 @@
-# Installation
+# Installation du Hub
 
 ## Dépendances
 
@@ -20,3 +20,5 @@ git clone https://github.com/yyewolf/rsa-tcp-support-2023/
 cd rsa-tcp-support-2023/hub
 go run cmd/hub/hub.go
 ```
+
+Il faudra laisser tourner le hub pour le bon fonctionnement du reste, celui-ci est sur `:8000`

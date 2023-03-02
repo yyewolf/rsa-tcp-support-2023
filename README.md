@@ -18,7 +18,7 @@ différents et sont contactés en parallèle (pour un même niveau).
 
 ## Interprétation du sujet
 
-Nous avons choisis de créer un protocole avec des "paquets" au format JSON dont la spécification ainsi que cas d'usage est [ici](./hub/readme.md).
+Nous avons choisis de créer un protocole avec des ["paquets" au format JSON](./hub/readme.md) bien définis.
 
 Nous avons aussi décider de faire 4 programmes, un programme pour le serveur central appelé "Hub", un programme pour les clients, un programme pour les agents, et un programme pour les robots. Les robots utilisent les mêmes routes que les agents mais sont programmés pour répondre qu'à un certains nombre de client (voir [ici](./bot/readme.md)).
 
