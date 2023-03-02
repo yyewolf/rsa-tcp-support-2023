@@ -16,3 +16,4 @@
 
 # Rust
 client/target
+client/Cargo.lock
