@@ -42,7 +42,7 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 		c.Agent = agent
 
 		// Add the agent to the agents map.
-		s.Agents[agent.Level] = append(s.Agents[c.ID], agent)
+		s.Agents[agent.Level] = append(s.Agents[agent.Level], agent)
 
 		c.Send(packets.NewSuccess(true))
 		if os.Getenv("DEBUG") == "true" {
@@ -54,7 +54,7 @@ func (s *Server) handleIdentify(data *packets.Identify, c *Connection) (err erro
 			if client.Level != agent.Level {
 				continue
 			}
-			client.Send(packets.NewAgentCount(len(s.Agents)))
+			client.Send(packets.NewAgentCount(len(s.Agents[agent.Level])))
 		}
 
 		// Send the clients to the agent.
