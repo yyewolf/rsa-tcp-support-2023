@@ -19,7 +19,7 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     let mut client = Client::default();
-    run_client(&mut terminal, &mut client)?;
+    let run_time = run_client(&mut terminal, &mut client);
 
     // restore terminal
     disable_raw_mode()?;
@@ -29,6 +29,11 @@ fn main() -> Result<(), io::Error> {
         DisableMouseCapture
     )?;
     terminal.show_cursor()?;
+
+    match run_time {
+        Ok(()) => {}
+        Err(e) => println!("An error occured : {}", e),
+    }
 
     Ok(())
 }
